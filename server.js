@@ -1,6 +1,7 @@
 const app = require("./src/app");
+const configEnv = require("./src/configs/config.mongodb");
 
-const POST = process.env.PORT || 3056;
+const POST = configEnv.app.port || 3056;
 
 const server = app.listen(POST, () => {
   console.log(`WSV eCommerce start with ${POST}`);
