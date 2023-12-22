@@ -45,12 +45,27 @@ class KeyTokenService {
   };
 
   static findByUserId = async (userId) => {
-    return await keytokenModel.findOne({ user: new Types.ObjectId(userId) }).lean();
+    return await keytokenModel
+      .findOne({ user: new Types.ObjectId(userId) })
+      .lean();
   };
 
   static removeById = async (id) => {
     return await keytokenModel.deleteOne({ _id: id });
   };
+
+  static findByRefreshTokenUsed = async (refreshToken) => {
+    return await keytokenModel.findOne({ refreshTokenUsed: refreshToken }).lean();
+  };
+
+  static findByRefreshToken = async (refreshToken) => {
+    return await keytokenModel.findOne({ refreshToken }).lean();
+  };
+
+
+  static deleteByKey = async (userId) => {
+    return await keytokenModel.findByIdAndDelete({ user: userId });
+  }
 }
 
 module.exports = KeyTokenService;

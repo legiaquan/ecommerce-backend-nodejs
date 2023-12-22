@@ -13,5 +13,6 @@ router.post("/shop/login", asyncHandler(AccessController.login));
 router.use(authentication);
 
 router.post("/shop/logout", asyncHandler(AccessController.logout));
+router.post("/shop/handlerRefreshToken", asyncHandler(AccessController.handlerRefreshToken));
 
 module.exports = router;

@@ -8,5 +8,13 @@ const server = app.listen(POST, () => {
 });
 
 process.on("SIGINT", () => {
-  server.close(() => console.log("Exit Server Express"));
+  console.log("SIGINT:: Received SIGINT signal. Closing server...");
+  server.close((err) => {
+    if (err) {
+      console.error(err);
+      process.exit(1);
+    }
+    console.log("SIGINT:: Server closed. Exiting process...");
+    process.exit(0);
+  });
 });
