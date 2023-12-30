@@ -7,15 +7,16 @@ const asyncHandler = require("../../helpers/asyncHandler");
 const ProductController = require("../../controllers/product.controller");
 const router = express.Router();
 
-router.get(
-    "/search/:keySearch",
-    asyncHandler(ProductController.getListSearch)
-  );
+router.get("/search/:keySearch", asyncHandler(ProductController.getListSearch));
+
+router.get("/", asyncHandler(ProductController.findAllProducts));
+router.get("/:product_id", asyncHandler(ProductController.findProduct));
 
 // authenticate
 router.use(authentication);
 
 router.post("", asyncHandler(ProductController.createProduct));
+router.patch("/:product_id", asyncHandler(ProductController.updateProduct));
 router.post(
   "/publish/:id",
   asyncHandler(ProductController.publishProductByShop)

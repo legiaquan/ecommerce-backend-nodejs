@@ -7,13 +7,18 @@ const {
   electronic,
   furniture,
 } = require("../models/product.model");
+const { insertInventory } = require("../models/repositories/inventory.repo");
 const {
   findAllDraftsForShopRepo,
   publishProductByShopRepo,
   findAllPublishForShopRepo,
   unpublishProductByShopRepo,
   searchProductByUserRepo,
+  findAllProductsRepo,
+  findProductRepo,
+  updateProductRepo,
 } = require("../models/repositories/product.repo");
+const { removeUndefinedObject, updateNestedObjectParser } = require("../utils");
 
 // Factory Product
 class ProductFactory {
@@ -30,6 +35,16 @@ class ProductFactory {
     }
 
     return new productClass(payload).createProduct();
+  }
+
+  static async updateProduct(type, productId, payload) {
+    const productClass = ProductFactory.productRegistry[type];
+
+    if (!productClass) {
+      throw new BadRequestError(`Invalid product type ${type}`);
+    }
+
+    return new productClass(payload).updateProduct(productId);
   }
 
   static async findAllDraftsForShop({ product_shop, limit = 50, skip = 0 }) {
@@ -52,6 +67,28 @@ class ProductFactory {
 
   static async searchProducts({ keySearch }) {
     return await searchProductByUserRepo({ keySearch });
+  }
+
+  static async findAllProducts({
+    limit = 50,
+    sort = "ctime",
+    page = 1,
+    filter = { isPublish: true },
+  }) {
+    return await findAllProductsRepo({
+      limit,
+      sort,
+      page,
+      filter,
+      select: ["product_name", "product_price", "product_thumb"],
+    });
+  }
+
+  static async findProduct({ product_id }) {
+    return await findProductRepo({
+      product_id,
+      unSelect: ["__v", "product_variations"],
+    });
   }
 }
 
@@ -77,7 +114,25 @@ class Product {
   }
 
   async createProduct(product_id) {
-    return await product.create({ ...this, _id: product_id });
+    const newProduct = await product.create({ ...this, _id: product_id });
+
+    if (newProduct) {
+      // add product_stock in inventory collection
+      await insertInventory({
+        productId: newProduct._id,
+        shopId: this.product_shop,
+        stock: this.product_quantity,
+      });
+    }
+    return newProduct;
+  }
+
+  async updateProduct(productId, payload) {
+    return await updateProductRepo({
+      productId,
+      payload,
+      model: product,
+    });
   }
 }
 
@@ -99,6 +154,26 @@ class Clothing extends Product {
     }
 
     return newProduct;
+  }
+
+  async updateProduct(productId) {
+    console.log("this: ", this);
+    const objectParams = removeUndefinedObject(this);
+
+    if (objectParams.product_attributes) {
+      await updateProductRepo({
+        productId,
+        payload: updateNestedObjectParser(objectParams.product_attributes),
+        model: clothing,
+      });
+    }
+
+    const updateProduct = await super.updateProduct(
+      productId,
+      updateNestedObjectParser(objectParams)
+    );
+
+    return updateProduct;
   }
 }
 

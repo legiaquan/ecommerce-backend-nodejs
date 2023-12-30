@@ -7,6 +7,7 @@ const {
   clothing,
   furniture,
 } = require("../product.model");
+const { getSelectData, unGetSelectData } = require("../../utils");
 
 const findAllDraftsForShopRepo = async ({ query, limit, skip }) => {
   return await queryProduct({ query, limit, skip });
@@ -83,10 +84,41 @@ const queryProduct = async ({ query, limit, skip }) => {
     .exec();
 };
 
+const findAllProductsRepo = async ({ limit, sort, page, filter, select }) => {
+  const skip = (page - 1) * limit;
+  const sortBy = sort === "ctime" ? { _id: -1 } : { _id: 1 };
+  return await product
+    .find(filter)
+    .sort(sortBy)
+    .skip(skip)
+    .limit(limit)
+    .select(getSelectData(select))
+    .lean();
+};
+
+const findProductRepo = async ({ product_id, unSelect }) => {
+  return await product
+    .findById(product_id)
+    .select(unGetSelectData(unSelect))
+    .lean();
+};
+
+const updateProductRepo = async ({
+  productId,
+  payload,
+  model,
+  isNew = true,
+}) => {
+  return await model.findByIdAndUpdate(productId, payload, { new: isNew });
+};
+
 module.exports = {
   findAllDraftsForShopRepo,
   findAllPublishForShopRepo,
   publishProductByShopRepo,
   unpublishProductByShopRepo,
   searchProductByUserRepo,
+  findAllProductsRepo,
+  findProductRepo,
+  updateProductRepo,
 };

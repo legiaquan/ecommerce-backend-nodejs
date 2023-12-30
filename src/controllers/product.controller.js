@@ -78,6 +78,35 @@ class AccessController {
       }),
     }).send(res);
   };
+
+  findAllProducts = async (req, res, next) => {
+    return new SuccessResponse({
+      message: "Find all product success!",
+      metadata: await ProductService.findAllProducts({
+        keySearch: req.params.keySearch,
+      }),
+    }).send(res);
+  };
+
+  findProduct = async (req, res, next) => {
+    return new SuccessResponse({
+      message: "Find product success!",
+      metadata: await ProductService.findProduct({
+        product_id: req.params.product_id,
+      }),
+    }).send(res);
+  };
+
+  updateProduct = async (req, res, next) => {
+    return new SuccessResponse({
+      message: "Update product success!",
+      metadata: await ProductService.updateProduct(
+        req.body.product_type,
+        req.params.product_id,
+        { ...req.body, product_shop: req.user.userId }
+      ),
+    }).send(res);
+  };
 }
 
 module.exports = new AccessController();
