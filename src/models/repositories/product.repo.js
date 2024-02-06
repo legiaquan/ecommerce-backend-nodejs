@@ -7,7 +7,11 @@ const {
   clothing,
   furniture,
 } = require("../product.model");
-const { getSelectData, unGetSelectData } = require("../../utils");
+const {
+  getSelectData,
+  unGetSelectData,
+  convertToObjectId,
+} = require("../../utils");
 
 const findAllDraftsForShopRepo = async ({ query, limit, skip }) => {
   return await queryProduct({ query, limit, skip });
@@ -112,6 +116,25 @@ const updateProductRepo = async ({
   return await model.findByIdAndUpdate(productId, payload, { new: isNew });
 };
 
+const getProductById = async (productId) => {
+  return await product.findOne({ _id: convertToObjectId(productId) }).lean();
+};
+
+const checkProductByServer = async (products) => {
+  return await Promise.all(
+    products.map(async (product) => {
+      const fondProduct = await getProductById(product.productId);
+      if (fondProduct) {
+        return {
+          price: foundProduct.product_price,
+          quantity: foundProduct.quantity,
+          productId: product.productId,
+        };
+      }
+    })
+  );
+};
+
 module.exports = {
   findAllDraftsForShopRepo,
   findAllPublishForShopRepo,
@@ -121,4 +144,6 @@ module.exports = {
   findAllProductsRepo,
   findProductRepo,
   updateProductRepo,
+  getProductById,
+  checkProductByServer,
 };

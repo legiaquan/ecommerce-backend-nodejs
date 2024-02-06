@@ -26,7 +26,7 @@ const fillAppDiscountCodesSelect = async ({
   page = 1,
   sort = "ctime",
   filter,
-  unSelect,
+  select,
   model,
 }) => {
   const skip = (page - 1) * limit;
@@ -36,11 +36,16 @@ const fillAppDiscountCodesSelect = async ({
     .sort(sortBy)
     .skip(skip)
     .limit(limit)
-    .select(getSelectData(unSelect))
+    .select(getSelectData(select))
     .lean();
+};
+
+const checkDiscountExists = async ({model, filter}) => {
+  return await model.findOne(filter).lean();
 };
 
 module.exports = {
   fillAppDiscountCodesUnSelect,
   fillAppDiscountCodesSelect,
+  checkDiscountExists,
 };
